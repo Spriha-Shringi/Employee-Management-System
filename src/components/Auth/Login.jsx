@@ -14,7 +14,7 @@ const Login = () => {
   }
   return (
     <div className='flex h-screen w-screen items-center justify-center'>
-      <div className='border-2 rounded-xl border-red-600 p-20'>
+      <div className='border-2 rounded-xl border-jungleGreen px-20 py-40'>
           <form onSubmit={(e)=>{
             submitH(e);
           }}
@@ -30,7 +30,7 @@ const Login = () => {
             onChange={(e)=>{
               setPassword(e.target.value)
             }}required className='text-white outline-none bg-transparent border-2 border-jungleGreen text-xl py-3 px-5 rounded-full placeholder:text-white' type="password" placeholder='Enter password'/>
-            <button className='mt-5 text-white border-red-500 outline-none bg-transparent border-2 bg-jungleGreen text-xl py-3 px-5 rounded-full placeholder:text-white'>Log in</button>
+            <button className='mt-5 text-white border-jungleGreen outline-none border-2 bg-jungleGreen text-xl py-3 px-5 rounded-full placeholder:text-white'>Log in</button>
           </form>
       </div>
     </div>

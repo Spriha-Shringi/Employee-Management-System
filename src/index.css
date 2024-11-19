@@ -2,8 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 *{
-  color: #fff;
+  color: #ffffff;
 }
 body{
-  background-color: #111;
+  background-color: #111111;
 }
+
+        /* /* #tasklist {
+          /* Enable scrolling and swiping */
+          /* touch-action: pan-x; /* Allow horizontal swiping */
+          /* -webkit-overflow-scrolling: touch; Smooth scrolling on iOS */
+          /* scrollbar-width: none; Hide scrollbar in Firefox */
+        /* } */ 
+        /* #tasklist::-webkit-scrollbar{
+          display: none;
+          
+        } */ 
