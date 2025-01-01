@@ -5,7 +5,7 @@ import App from './App.jsx'
 import AuthProvider from './context/AuthProvider.jsx'
 
 
-// localStorage.clear()//why not always working or commented out?
+localStorage.clear()//why not always working or commented out?
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>

@@ -30,7 +30,7 @@ const employees = [
   },
   {
     id: 2,
-    email: "employee2@example.com",
+    email: "e2@e.com",
     password: "123",
     tasks: [
       {
@@ -59,7 +59,7 @@ const employees = [
   },
   {
     id: 3,
-    email: "employee3@example.com",
+    email: "e3@e.com",
     password: "123",
     tasks: [
       {
@@ -88,7 +88,7 @@ const employees = [
   },
   {
     id: 4,
-    email: "employee4@example.com",
+    email: "e4@e.com",
     password: "123",
     tasks: [
       {
@@ -117,7 +117,7 @@ const employees = [
   },
   {
     id: 5,
-    email: "employee5@example.com",
+    email: "e5@e.com",
     password: "123",
     tasks: [
       {
@@ -150,7 +150,7 @@ const employees = [
   const admin = [
     {
       "id": 1,
-      "email": "admin@example.com",
+      "email": "admin@e.com",
       "password": "123"
     }
   ];
@@ -165,3 +165,31 @@ export const getLocalStorage=()=>{
     return{employees, admin}
     // const localStorage.getItem('admin', JSON.stringify(admin))
 }
+
+// const admin = [
+//   {
+//     "id": 1,
+//     "email": "admin@e.com",
+//     "password": "123"
+//   }
+// ];
+
+// export const setLocalStorage = () => {
+//     if (!localStorage.getItem('employees')) {
+//         localStorage.setItem('employees', JSON.stringify(employees))
+//     }
+//     if (!localStorage.getItem('admin')) {
+//         localStorage.setItem('admin', JSON.stringify(admin))
+//     }
+// }
+
+// export const getLocalStorage = () => {
+//     try {
+//         const employees = JSON.parse(localStorage.getItem('employees')) || []
+//         const admin = JSON.parse(localStorage.getItem('admin')) || []
+//         return { employees, admin }
+//     } catch (error) {
+//         console.error('Error reading from localStorage:', error)
+//         return { employees: [], admin: [] }
+//     }
+// }

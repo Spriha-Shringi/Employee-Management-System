@@ -8,8 +8,8 @@ const Login = ({handleLogin}) => {//props
   const submitH =(e)=>{
     e.preventDefault()
     handleLogin(email, password)
-    setEmail("")
-    setPassword("")
+    // setEmail("")
+    // setPassword("")
   }
   return (
     <div className='flex h-screen w-screen items-center justify-center'>
