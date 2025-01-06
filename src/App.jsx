@@ -1,15 +1,17 @@
 import React, { useContext, useState, useEffect } from 'react';
-import Login from './components/Auth/Login';
-import EmployeeDashboard from './components/Dashboard/EmployeeDashboard';
-import AdminDashboard from './components/Dashboard/AdminDashboard';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import Login from './components/Auth/Login.jsx';
+import Signup from './components/Auth/Signup.jsx';
+import EmployeeDashboard from './components/Dashboard/EmployeeDashboard.jsx';
+import AdminDashboard from './components/Dashboard/AdminDashboard.jsx';
+import AuthRoute from './components/Auth/AuthRoute.jsx';
 import { AuthContext } from './context/AuthProvider';
 
 const App = () => {
-  const [user, setUser] = useState(null); // Track user role
-  const [loggedInUserData, setloggedInUserData] = useState(null); // Track user data
-  const [userData] = useContext(AuthContext); // Access auth context
+  const [user, setUser] = useState(null);
+  const [loggedInUserData, setloggedInUserData] = useState(null);
+  const [userData] = useContext(AuthContext);
 
-  // Load user information from localStorage on initial render
   useEffect(() => {
     const loggedInUser = localStorage.getItem('loggedInUser');
     if (loggedInUser) {
@@ -19,7 +21,6 @@ const App = () => {
     }
   }, []);
 
-  // Handle login functionality
   const handleLogin = (email, password) => {
     if (email === 'admin@me.com' && password === '123') {
       localStorage.setItem('loggedInUser', JSON.stringify({ role: 'admin' }));
@@ -42,27 +43,47 @@ const App = () => {
     }
   };
 
-  // Render Login or appropriate dashboard
   return (
-    <>
-      {!user ? (
-        <Login handleLogin={handleLogin} />
-      ) : user === 'admin' ? (
-        <AdminDashboard changeUser={() => {
-          setUser(null); // Reset user state
-          setloggedInUserData(null); // Reset user data
-        }}
-        />
-      ) : (
-        <EmployeeDashboard
-          changeUser={() => {
-            setUser(null); // Reset user state
-            setloggedInUserData(null); // Reset user data
-          }}
-          data={loggedInUserData}
-        />
-      )}
-    </>
+    <Routes>
+      {/* Add a root route that redirects to login */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      
+      <Route path="/login" element={<Login handleLogin={handleLogin} />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route
+        path="/admin"
+        element={
+          <AuthRoute>
+            <AdminDashboard
+              changeUser={() => {
+                setUser(null);
+                setloggedInUserData(null);
+              }}
+            />
+          </AuthRoute>
+        }
+      />
+      <Route
+        path="/employee"
+        element={
+          <AuthRoute>
+            {loggedInUserData ? (
+              <EmployeeDashboard
+                changeUser={() => {
+                  setUser(null);
+                  setloggedInUserData(null);
+                }}
+                data={loggedInUserData}
+              />
+            ) : (
+              <Navigate to="/login" replace />
+            )}
+          </AuthRoute>
+        }
+      />
+      {/* Add a catch-all route for unmatched paths */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
   );
 };
 
