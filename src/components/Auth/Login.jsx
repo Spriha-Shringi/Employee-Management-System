@@ -185,8 +185,9 @@ const Login = () => {
               © {new Date().getFullYear()} <span className="font-semibold text-blue-600">WorkFlowX</span>. All rights reserved.
             </p>
             <p className="text-gray-500 text-sm mt-2">
-              Created by <span className="font-semibold text-blue-600">Spriha Shringi & Team</span>
-            </p>
+  Created with ❤️ by <span className="font-semibold text-blue-600">Spriha Shringi & Team</span>
+</p>
+
             <a 
               href="mailto:shringispriha@gmail.com" 
               className="text-blue-600 hover:text-blue-500 text-sm mt-2 inline-block underline font-medium transition-all duration-300"
