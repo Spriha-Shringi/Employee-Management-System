@@ -1,70 +1,79 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import Header from '../Others/Header';
 import CreateTask from '../Others/CreateTask';
 import AllTask from '../Others/AllTask';
-import { collection, addDoc, getDocs } from 'firebase/firestore';
-import { db } from '../../firebase-config';
+import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
+import { db, auth } from '../../firebase-config';
+import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthProvider';
 
 const AdminDashboard = ({ changeUser }) => {
-  const [activeTab, setActiveTab] = useState('tasks'); // Track active tab (Tasks / Users)
+  const [activeTab, setActiveTab] = useState('tasks');
   const [showAddUser, setShowAddUser] = useState(false);
   const [users, setUsers] = useState([]);
   const [newUser, setNewUser] = useState({
     name: '',
     email: '',
-    password: ''
+    password: '',
   });
-  const [tasks, setTasks] = useState({
-    new: [],
-    active: [],
-    completed: [],
-    failed: []
-  });
+  const [userData, setUserData] = useContext(AuthContext);
 
   // Fetching users from Firebase Firestore
   useEffect(() => {
     const fetchUsers = async () => {
       const querySnapshot = await getDocs(collection(db, 'employees'));
-      const usersData = querySnapshot.docs.map(doc => ({
+      const usersData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
+        taskNumbers: doc.data().taskNumbers || {
+          newTask: 0,
+          active: 0,
+          completed: 0,
+          failed: 0,
+        },
       }));
       setUsers(usersData);
+      // Update AuthContext with fetched users
+      setUserData((prev) => ({
+        ...prev,
+        employees: usersData,
+      }));
     };
     fetchUsers();
-  }, []);
-
-  // Fetching tasks from Firebase Firestore
-  useEffect(() => {
-    const fetchTasks = async () => {
-      const querySnapshot = await getDocs(collection(db, 'tasks'));
-      const tasksData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-
-      setTasks({
-        new: tasksData.filter(task => task.status === 'new'),
-        active: tasksData.filter(task => task.status === 'active'),
-        completed: tasksData.filter(task => task.status === 'completed'),
-        failed: tasksData.filter(task => task.status === 'failed')
-      });
-    };
-    fetchTasks();
   }, []);
 
   // Handle adding a user to Firestore
   const handleAddUser = async (e) => {
     e.preventDefault();
     try {
-      const newUserDoc = await addDoc(collection(db, 'employees'), {
-        name: newUser.name,
+      const employeeData = {
+        firstName: newUser.name,
         email: newUser.email,
         password: newUser.password,
-        createdAt: new Date().toISOString()
-      });
+        createdAt: new Date().toISOString(),
+        taskNumbers: {
+          newTask: 0,
+          active: 0,
+          completed: 0,
+          failed: 0,
+        },
+        tasks: [],
+      };
 
-      setUsers([...users, { id: newUserDoc.id, ...newUser }]);
+      const newUserDoc = await addDoc(collection(db, 'employees'), employeeData);
+
+      const newEmployeeWithId = {
+        id: newUserDoc.id,
+        ...employeeData,
+      };
+
+      setUsers((prevUsers) => [...prevUsers, newEmployeeWithId]);
+      setUserData((prev) => ({
+        ...prev,
+        employees: [...(prev.employees || []), newEmployeeWithId],
+      }));
+
       setShowAddUser(false);
       setNewUser({ name: '', email: '', password: '' });
     } catch (error) {
@@ -72,24 +81,37 @@ const AdminDashboard = ({ changeUser }) => {
     }
   };
 
-  // Handle adding a task to Firestore
-  const handleAddTask = async (taskData) => {
+  // Handle deleting a user
+  const handleDeleteUser = async (id) => {
     try {
-      const newTaskDoc = await addDoc(collection(db, 'tasks'), {
-        name: taskData.name,
-        description: taskData.description,
-        assignedTo: taskData.assignedTo,  // User ID of the assigned employee
-        status: 'new', // Default status
-        createdAt: new Date().toISOString()
-      });
-
-      setTasks({
-        ...tasks,
-        new: [...tasks.new, { id: newTaskDoc.id, ...taskData }]
-      });
+      await deleteDoc(doc(db, 'employees', id));
+      setUsers(users.filter((user) => user.id !== id));
+      setUserData((prev) => ({
+        ...prev,
+        employees: prev.employees.filter((emp) => emp.id !== id),
+      }));
     } catch (error) {
-      console.error('Error adding task:', error);
+      console.error('Error deleting user:', error);
     }
+  };
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      changeUser(null);
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
+
+  // Toggle Password Visibility
+  const [visiblePasswords, setVisiblePasswords] = useState({});
+  const togglePasswordVisibility = (id) => {
+    setVisiblePasswords((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
   };
 
   return (
@@ -102,13 +124,17 @@ const AdminDashboard = ({ changeUser }) => {
           <nav className="-mb-px flex space-x-8">
             <button
               onClick={() => setActiveTab('tasks')}
-              className="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-white hover:text-yellow-300"
+              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-white hover:text-yellow-300 ${
+                activeTab === 'tasks' ? 'border-yellow-300' : 'border-transparent'
+              }`}
             >
               Tasks
             </button>
             <button
               onClick={() => setActiveTab('users')}
-              className="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-white hover:text-yellow-300"
+              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-white hover:text-yellow-300 ${
+                activeTab === 'users' ? 'border-yellow-300' : 'border-transparent'
+              }`}
             >
               Users
             </button>
@@ -118,8 +144,8 @@ const AdminDashboard = ({ changeUser }) => {
 
       {activeTab === 'tasks' ? (
         <>
-          <CreateTask handleAddTask={handleAddTask} />
-          <AllTask tasks={tasks} users={users} />
+          <CreateTask />
+          <AllTask />
         </>
       ) : (
         <div className="bg-white bg-opacity-90 rounded-lg shadow-lg p-8">
@@ -136,19 +162,40 @@ const AdminDashboard = ({ changeUser }) => {
           {/* Users Table */}
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-800 text-white">
+              <thead className="bg-gray-800">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium">Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium">Created At</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-white">Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-white">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-white">Password</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-white">Created At</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-white">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-gray-50">
+              <tbody className="bg-gray-100">
                 {users.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-200">
-                    <td className="px-6 py-4">{user.name}</td>
-                    <td className="px-6 py-4">{user.email}</td>
-                    <td className="px-6 py-4">{new Date(user.createdAt).toLocaleDateString()}</td>
+                    <td className="px-6 py-4 text-black">{user.firstName}</td>
+                    <td className="px-6 py-4 text-black">{user.email}</td>
+                    <td className="px-6 py-4 text-black">
+                      {visiblePasswords[user.id] ? user.password : '********'}
+                      <button
+                        onClick={() => togglePasswordVisibility(user.id)}
+                        className="ml-2 text-blue-500 hover:underline"
+                      >
+                        {visiblePasswords[user.id] ? 'Hide' : 'Show'}
+                      </button>
+                    </td>
+                    <td className="px-6 py-4 text-black">
+                      {new Date(user.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4">
+                      <button
+                        onClick={() => handleDeleteUser(user.id)}
+                        className="text-red-600 hover:text-red-800"
+                      >
+                        Delete
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -168,9 +215,7 @@ const AdminDashboard = ({ changeUser }) => {
                 <input
                   type="text"
                   value={newUser.name}
-                  onChange={(e) =>
-                    setNewUser({ ...newUser, name: e.target.value })
-                  }
+                  onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
                   className="mt-1 block w-full p-3 border rounded-lg text-gray-800"
                   required
                 />
@@ -180,9 +225,7 @@ const AdminDashboard = ({ changeUser }) => {
                 <input
                   type="email"
                   value={newUser.email}
-                  onChange={(e) =>
-                    setNewUser({ ...newUser, email: e.target.value })
-                  }
+                  onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
                   className="mt-1 block w-full p-3 border rounded-lg text-gray-800"
                   required
                 />
@@ -192,9 +235,7 @@ const AdminDashboard = ({ changeUser }) => {
                 <input
                   type="password"
                   value={newUser.password}
-                  onChange={(e) =>
-                    setNewUser({ ...newUser, password: e.target.value })
-                  }
+                  onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
                   className="mt-1 block w-full p-3 border rounded-lg text-gray-800"
                   required
                 />

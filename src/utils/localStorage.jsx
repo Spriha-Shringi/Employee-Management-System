@@ -2,7 +2,7 @@ const employees = [
   {
     id: 1,
     email: "e@e.com",
-    password: "123",
+    password: "123456",
     tasks: [
       {
         active: true,
@@ -31,7 +31,7 @@ const employees = [
   {
     id: 2,
     email: "e2@e.com",
-    password: "123",
+    password: "123456",
     tasks: [
       {
         active: true,
@@ -60,7 +60,7 @@ const employees = [
   {
     id: 3,
     email: "e3@e.com",
-    password: "123",
+    password: "123456",
     tasks: [
       {
         active: true,
@@ -89,7 +89,7 @@ const employees = [
   {
     id: 4,
     email: "e4@e.com",
-    password: "123",
+    password: "123456",
     tasks: [
       {
         active: false,
@@ -118,7 +118,7 @@ const employees = [
   {
     id: 5,
     email: "e5@e.com",
-    password: "123",
+    password: "123456",
     tasks: [
       {
         active: true,
@@ -151,7 +151,7 @@ const employees = [
     {
       "id": 1,
       "email": "admin@e.com",
-      "password": "123"
+      "password": "123456"
     }
   ];
 
@@ -170,7 +170,7 @@ export const getLocalStorage=()=>{
 //   {
 //     "id": 1,
 //     "email": "admin@e.com",
-//     "password": "123"
+//     "password": "123456"
 //   }
 // ];
 

@@ -1,12 +1,19 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { getAuth, signOut } from 'firebase/auth';
 
 const Header = ({ changeUser, data }) => {
   const username = data?.firstName || 'Admin'; // Determine username dynamically
+  const auth = getAuth();
 
-  const logOutUser = () => {
-    localStorage.setItem('loggedInUser', ''); // Clear localStorage
-    changeUser(null); // Reset parent user state
+  const logOutUser = async () => {
+    try {
+      await signOut(auth); // Sign out the user from Firebase
+      localStorage.removeItem('loggedInUser'); // Clear localStorage
+      changeUser(null); // Reset parent user state
+    } catch (error) {
+      console.error('Error logging out:', error.message); // Handle potential errors
+    }
   };
 
   return (
