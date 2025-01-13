@@ -1,3 +1,10 @@
+This application is designed to assign tasks to employees from the admin side and to track the status of assigned tasks in one place.
+
+
+
+
+
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
