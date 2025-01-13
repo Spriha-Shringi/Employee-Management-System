@@ -48,7 +48,7 @@ const Signup = () => {
       <div className="w-full flex items-center justify-center bg-white p-10">
         <div className="w-full max-w-md">
           <h2 className="text-4xl font-bold text-gray-800 text-center mb-6">
-            Sign Up for <span className="text-blue-600">WorkFlowX</span>
+            Admin Sign Up for <span className="text-blue-600">WorkFlowX</span>
           </h2>
           <form onSubmit={handleSignup} className="flex flex-col items-center justify-center gap-6">
             <input
