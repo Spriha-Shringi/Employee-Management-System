@@ -113,7 +113,7 @@ const Login = () => {
       <div className="w-full lg:w-1/3 flex items-center justify-center bg-white p-10">
         <div className="w-full max-w-md">
           <h2 className="text-4xl font-bold text-gray-800 text-center mb-6">
-            Log In to <span className="text-blue-600">WorkFlowX</span>
+            Admin Log In to <span className="text-blue-600">WorkFlowX</span>
           </h2>
 
           {/* Google Login Button */}
@@ -175,6 +175,15 @@ const Login = () => {
               Don't have an admin account?{' '}
               <Link to="/signup" className="text-blue-600 hover:underline">
                 Sign Up
+              </Link>
+            </p>
+          </div>
+
+          <div className="text-center mt-8">
+            <p className="text-gray-600">
+              You are an employee, right?{' '}
+              <Link to="/EmployeeLogin" className="text-blue-600 hover:underline">
+                Employee Login
               </Link>
             </p>
           </div>

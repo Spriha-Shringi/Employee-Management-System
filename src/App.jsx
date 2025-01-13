@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Auth/Login.jsx';
 import Signup from './components/Auth/Signup.jsx';
+import Emp from './components/Auth/Emp.jsx';
 import EmployeeDashboard from './components/Dashboard/EmployeeDashboard.jsx';
 import AdminDashboard from './components/Dashboard/AdminDashboard.jsx';
 import AuthRoute from './components/Auth/AuthRoute.jsx';
@@ -50,6 +51,7 @@ const App = () => {
       
       <Route path="/login" element={<Login handleLogin={handleLogin} />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/EmployeeLogin" element={<Emp />} />
       <Route
         path="/admin"
         element={
