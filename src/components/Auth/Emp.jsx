@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../firebase-config';
 
-const Emp = () => {
+const Emp = ({ handleLogin }) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -47,7 +47,7 @@ const Emp = () => {
       };
       localStorage.setItem('loggedInUser', JSON.stringify(userData));
 
-      
+      // handleLogin(email, password);
       setTimeout(() => navigate('/employee'), 1200);
       console.log("good work!!")
       setSuccess('Login successful! Redirecting to dashboard...');
