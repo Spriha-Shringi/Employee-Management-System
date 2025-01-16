@@ -1,174 +1,146 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../firebase-config';
 
-const Emp = ({ handleLogin }) => {
+const Emp = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+    setSuccess('');
+    setLoading(true);
 
     try {
-      // Query Firestore only by email
+      // Query Firestore for employee with matching email
       const employeesRef = collection(db, 'employees');
-      const q = query(employeesRef, where('email', '==', email));
+      const q = query(employeesRef, where("email", "==", email));
       const querySnapshot = await getDocs(q);
 
-      if (!querySnapshot.empty) {
-        const employeeDoc = querySnapshot.docs[0];
-        const employeeData = {
-          id: employeeDoc.id,
-          ...employeeDoc.data()
-        };
-
-        // Check password locally
-        if (employeeData.password === password) {
-          // Store the complete employee data
-          localStorage.setItem(
-            'loggedInUser',
-            JSON.stringify({
-              role: 'employee',
-              data: employeeData
-            })
-          );
-          
-          handleLogin(email, password);
-          navigate('/employee');
-        } else {
-          setError('Invalid password. Please try again.');
-        }
-      } else {
-        setError('Email not found. Please check your email address.');
+      if (querySnapshot.empty) {
+        setError('No employee account found with this email.');
+        return;
       }
+
+      // Check if password matches
+      const employeeDoc = querySnapshot.docs[0];
+      const employeeData = employeeDoc.data();
+
+      if (employeeData.password !== password) {
+        setError('Invalid password. Please try again.');
+        return;
+      }
+
+      // Store employee data in localStorage for persistence
+      const userData = {
+        role: 'employee',
+        data: {
+          id: employeeDoc.id,
+          ...employeeData
+        }
+      };
+      localStorage.setItem('loggedInUser', JSON.stringify(userData));
+
+      
+      setTimeout(() => navigate('/employee'), 1200);
+      console.log("good work!!")
+      setSuccess('Login successful! Redirecting to dashboard...');
     } catch (err) {
-      console.error('Login Error:', err);
-      setError('Login failed. Please try again later.');
+      console.error('Employee Login Error:', err.message);
+      setError('An error occurred during login. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex h-screen w-screen">
-      {/* Left Content Section */}
-      <div className="w-full lg:w-2/3 h-full bg-gradient-to-br from-indigo-600 to-purple-800 text-white">
-        <div className="w-full p-12 flex flex-col justify-center">
-          <h1 className="text-5xl font-extrabold mb-6">Welcome to WorkFlowX!</h1>
-          <p className="text-lg mb-6">
-            Access your personalized dashboard to manage tasks, track progress, and collaborate with your team effectively.
-          </p>
-
-          {/* Features Section */}
-          <div className="grid grid-cols-1 gap-6">
-            <div className="bg-white bg-opacity-10 p-6 rounded-lg">
-              <h4 className="text-xl font-bold mb-3">Track Your Tasks</h4>
-              <p>Stay on top of your assignments and meet deadlines efficiently.</p>
-            </div>
-            <div className="bg-white bg-opacity-10 p-6 rounded-lg">
-              <h4 className="text-xl font-bold mb-3">Update Progress</h4>
-              <p>Keep your team informed with real-time updates on task progress.</p>
-            </div>
-            <div className="bg-white bg-opacity-10 p-6 rounded-lg">
-              <h4 className="text-xl font-bold mb-3">View Performance</h4>
-              <p>Monitor your performance metrics and task completion rates.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Right Section (Login Form) */}
-      <div className="w-full lg:w-1/3 flex items-center justify-center bg-white p-10">
-        <div className="w-full max-w-md">
-          <h2 className="text-4xl font-bold text-gray-800 text-center mb-6">
-            Employee Login to <span className="text-blue-600">WorkFlowX</span>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-800 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8">
+        <div className="text-center">
+          <h2 className="text-3xl font-extrabold text-gray-900 mb-6">
+            Employee Login
           </h2>
+        </div>
 
-          {error && (
-            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-center">
-              {error}
-            </div>
-          )}
+        {error && (
+          <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            {error}
+          </div>
+        )}
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Name
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter your name"
-                className="w-full text-gray-800 outline-none bg-gray-100 border border-gray-300 text-lg py-3 px-4 rounded-lg shadow-md placeholder-gray-500 focus:ring-2 focus:ring-blue-400"
-                required
-              />
-            </div>
+        {success && (
+          <div className="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+            {success}
+          </div>
+        )}
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email Address
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                className="w-full text-gray-800 outline-none bg-gray-100 border border-gray-300 text-lg py-3 px-4 rounded-lg shadow-md placeholder-gray-500 focus:ring-2 focus:ring-blue-400"
-                required
-              />
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              Email address
+            </label>
+            <input
+              id="email"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="mt-1 block w-full px-3 text-black py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Enter your email"
+            />
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Password
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                className="w-full text-gray-800 outline-none bg-gray-100 border border-gray-300 text-lg py-3 px-4 rounded-lg shadow-md placeholder-gray-500 focus:ring-2 focus:ring-blue-400"
-                required
-              />
-            </div>
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="mt-1 block w-full px-3 py-2 border text-black border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Enter your password"
+            />
+          </div>
 
+          <div>
             <button
               type="submit"
               disabled={loading}
-              className={`w-full mt-4 text-white ${
-                loading ? 'bg-gray-400' : 'bg-green-500 hover:bg-green-600'
-              } transition-all text-lg py-3 px-5 rounded-lg shadow-lg`}
+              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+                loading
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+              }`}
             >
-              {loading ? 'Logging in...' : 'Log In'}
+              {loading ? 'Logging in...' : 'Log in'}
             </button>
-          </form>
-
-          <div className="text-center mt-8">
-            <p className="text-gray-600">
-              Are you an admin?{' '}
-              <Link to="/login" className="text-blue-600 hover:underline">
-                Admin Login
-              </Link>
-            </p>
           </div>
+        </form>
 
-          {/* Footer */}
-          <div className="mt-10 text-center">
-            <p className="text-gray-500 text-sm font-medium">
-              © {new Date().getFullYear()} <span className="font-semibold text-blue-600">WorkFlowX</span>. All rights reserved.
-            </p>
-            <p className="text-gray-500 text-sm mt-2">
-              Created with ❤️ by <span className="font-semibold text-blue-600">Spriha Shringi & Team</span>
-            </p>
+        <div className="mt-6">
+          <div className="text-center">
+            <Link
+              to="/login"
+              className="font-medium text-blue-600 hover:text-blue-500"
+            >
+              Admin Login
+            </Link>
           </div>
+        </div>
+
+        <div className="mt-4 text-center">
+          <p className="text-sm text-gray-600">
+            Don't have an account? Please contact your administrator.
+          </p>
         </div>
       </div>
     </div>

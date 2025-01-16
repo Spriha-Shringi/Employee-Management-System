@@ -51,7 +51,7 @@ const App = () => {
       
       <Route path="/login" element={<Login handleLogin={handleLogin} />} />
       <Route path="/signup" element={<Signup />} />
-      <Route path="/EmployeeLogin" element={<Emp />} />
+      <Route path="/EmployeeLogin" element={<Emp handleLogin={handleLogin}/>} />
       <Route
         path="/admin"
         element={
@@ -77,13 +77,15 @@ const App = () => {
                 }}
                 data={loggedInUserData}
               />
-            ) : (
+            ) :  (
+              
               <Navigate to="/login" replace />
             )}
           </AuthRoute>
         }
       />
       {/* Add a catch-all route for unmatched paths */}
+      {/* console.log("error") */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

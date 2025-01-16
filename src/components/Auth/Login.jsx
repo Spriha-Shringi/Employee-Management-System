@@ -147,7 +147,7 @@ const Login = () => {
               required
               className="w-full text-gray-800 outline-none bg-gray-100 border border-gray-300 text-lg py-3 px-4 rounded-lg shadow-md placeholder-gray-500 focus:ring-2 focus:ring-blue-400"
               type="email"
-              placeholder="Enter your username/email"
+              placeholder="Enter your email"
             />
 
             {/* Password Input */}

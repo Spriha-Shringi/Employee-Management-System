@@ -6,10 +6,11 @@ import PropTypes from 'prop-types';
 
 const EmployeeDashboard = ({ changeUser, data }) => {
   return (
-    <div className="p-10 bg-[#1C1C1C] h-screen">
-      <Header changeUser={changeUser} data={data} />
-      <TaskListNumbers data={data} />
-      <TaskList data={data} />
+    <div className="p-10 bg-[#1C1C1C] h-screen font-red">
+      {/* <Header changeUser={changeUser} data={data} />
+      <TaskListNumbers data={data} /> */}
+      {/* <TaskList data={data} /> */}
+      Hii
     </div>
   );
 };
