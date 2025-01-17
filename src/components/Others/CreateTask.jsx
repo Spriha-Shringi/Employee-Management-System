@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { AuthContext } from '../../context/AuthProvider';
-import { collection, addDoc, updateDoc, doc } from 'firebase/firestore';
+import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { db } from '../../firebase-config';
 
 const CreateTask = () => {
@@ -12,9 +12,18 @@ const CreateTask = () => {
   const [category, setCategory] = useState('');
   const [error, setError] = useState('');
 
-  // Check if employee exists in userData
+  // Find employee by name
   const findEmployee = (employeeName) => {
-    return userData?.employees?.find(emp => emp.firstName.toLowerCase() === employeeName.toLowerCase());
+    return userData?.employees?.find(
+      (emp) => emp.firstName.toLowerCase() === employeeName.toLowerCase()
+    );
+  };
+
+  // Validate task uniqueness
+  const isTaskTitleUnique = (employee, taskTitle) => {
+    return !(employee.tasks || []).some(
+      (task) => task.title.toLowerCase() === taskTitle.toLowerCase()
+    );
   };
 
   const submitHandler = async (e) => {
@@ -27,50 +36,50 @@ const CreateTask = () => {
       return;
     }
 
+    if (!isTaskTitleUnique(employee, taskTitle)) {
+      setError('Task title must be unique for this employee.');
+      return;
+    }
+
     const newTask = {
+      id: Date.now().toString(), // Unique task ID
       title: taskTitle,
       description: taskDescription,
       date: taskDate,
-      assignedTo: assignTo,
       category: category,
       status: 'new',
       createdAt: new Date().toISOString(),
-      employeeId: employee.id
     };
 
     try {
-      // Add task to Firestore
-      const taskRef = await addDoc(collection(db, 'tasks'), newTask);
-      
-      // Update employee's task numbers in Firestore
+      // Update Firestore with the new task and increment new task count
       const employeeRef = doc(db, 'employees', employee.id);
-      const updatedTaskNumbers = {
-        ...employee.taskNumbers,
-        newTask: (employee.taskNumbers?.newTask || 0) + 1
-      };
-      
       await updateDoc(employeeRef, {
-        taskNumbers: updatedTaskNumbers
+        tasks: arrayUnion(newTask),
+        'taskNumbers.newTask': (employee.taskNumbers?.newTask || 0) + 1, // Increment newTask count
       });
 
       // Update local state
-      const updatedEmployees = userData.employees.map(emp => {
+      const updatedEmployees = userData.employees.map((emp) => {
         if (emp.id === employee.id) {
           return {
             ...emp,
-            taskNumbers: updatedTaskNumbers,
-            tasks: [...(emp.tasks || []), { id: taskRef.id, ...newTask }]
+            tasks: [...(emp.tasks || []), newTask],
+            taskNumbers: {
+              ...emp.taskNumbers,
+              newTask: (emp.taskNumbers?.newTask || 0) + 1,
+            },
           };
         }
         return emp;
       });
 
-      setUserData(prev => ({
+      setUserData((prev) => ({
         ...prev,
-        employees: updatedEmployees
+        employees: updatedEmployees,
       }));
 
-      // Reset form
+      // Reset form fields
       setTaskTitle('');
       setTaskDescription('');
       setTaskDate('');
@@ -86,11 +95,12 @@ const CreateTask = () => {
   return (
     <div className="p-5 bg-[#1c1c1c] mt-5 rounded">
       {error && (
-        <div className="bg-red-500 text-white p-3 mb-4 rounded">
-          {error}
-        </div>
+        <div className="bg-red-500 text-white p-3 mb-4 rounded">{error}</div>
       )}
-      <form onSubmit={submitHandler} className="flex flex-wrap w-full items-start justify-between">
+      <form
+        onSubmit={submitHandler}
+        className="flex flex-wrap w-full items-start justify-between"
+      >
         <div className="w-1/2">
           <div>
             <h3 className="text-sm text-gray-300 mb-0.5">Task Title</h3>
@@ -109,7 +119,6 @@ const CreateTask = () => {
               value={taskDate}
               onChange={(e) => setTaskDate(e.target.value)}
               className="text-sm py-1 px-2 w-4/5 rounded outline-none bg-transparent border-[1px] border-gray-400 mb-4"
-            //   type="text"
               type="date"
               required
             />

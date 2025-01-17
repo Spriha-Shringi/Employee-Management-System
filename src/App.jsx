@@ -6,26 +6,27 @@ import Emp from './components/Auth/Emp.jsx';
 import EmployeeDashboard from './components/Dashboard/EmployeeDashboard.jsx';
 import AdminDashboard from './components/Dashboard/AdminDashboard.jsx';
 import { AuthContext } from './context/AuthProvider';
+import AuthRoute from './components/Auth/AuthRoute.jsx';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRole }) => {
   const loggedInUser = localStorage.getItem('loggedInUser');
-  
+
   if (!loggedInUser) {
     return <Navigate to="/login" replace />;
   }
-  
+
   try {
     const userData = JSON.parse(loggedInUser);
     if (!userData.role || !userData.data) {
       localStorage.removeItem('loggedInUser');
       return <Navigate to="/login" replace />;
     }
-    
+
     if (userData.role !== allowedRole) {
       return <Navigate to="/login" replace />;
     }
-    
+
     return children;
   } catch (error) {
     console.error('Error parsing user data:', error);
@@ -34,7 +35,7 @@ const ProtectedRoute = ({ children, allowedRole }) => {
   }
 };
 
-const App = () => {
+const EmployeeApp = () => {
   const [user, setUser] = useState(null);
   const [loggedInUserData, setloggedInUserData] = useState(null);
   const [userData] = useContext(AuthContext);
@@ -60,21 +61,10 @@ const App = () => {
         setloggedInUserData(null);
       }
     }
-  }, [location]); // Re-run when location changes
+  }, [location]);
 
   const handleLogin = (email, password) => {
-    if (email === 'admin@me.com' && password === '123456') {
-      const adminData = { 
-        role: 'admin', 
-        data: { 
-          email: 'admin@me.com',
-          name: 'Admin User'
-        } 
-      };
-      localStorage.setItem('loggedInUser', JSON.stringify(adminData));
-      setUser('admin');
-      setloggedInUserData(adminData.data);
-    } else if (
+    if (
       userData &&
       userData.employees.some((e) => e.email === email && e.password === password)
     ) {
@@ -98,20 +88,8 @@ const App = () => {
 
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="/login" element={<Login handleLogin={handleLogin} />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/EmployeeLogin" element={<Emp handleLogin={handleLogin} />} />
-      
-      <Route
-        path="/admin"
-        element={
-          <ProtectedRoute allowedRole="admin">
-            <AdminDashboard changeUser={handleLogout} />
-          </ProtectedRoute>
-        }
-      />
-      
       <Route
         path="/employee"
         element={
@@ -129,10 +107,59 @@ const App = () => {
           </ProtectedRoute>
         }
       />
-      
+      <Route path="*" element={<Navigate to="/EmployeeLogin" replace />} />
+    </Routes>
+  );
+};
+
+const AdminApp = () => {
+  const [user, setUser] = useState(null);
+  const [loggedInUserData, setloggedInUserData] = useState(null);
+  const [userData] = useContext(AuthContext);
+
+  useEffect(() => {
+    const loggedInUser = localStorage.getItem('loggedInUser');
+    if (loggedInUser) {
+      const userData = JSON.parse(loggedInUser);
+      setUser(userData.role);
+      setloggedInUserData(userData.data);
+    }
+  }, []);
+
+  const handleLoginA = (email, password) => {
+    if (email === 'admin@me.com' && password === '123456') {
+      localStorage.setItem('loggedInUser', JSON.stringify({ role: 'admin' }));
+      setUser('admin');
+    } else {
+      alert('Invalid Credentials');
+    }
+  };
+
+  return (
+    <Routes>
+      <Route path="/login" element={<Login handleLogin={handleLoginA} />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/admin" element={
+        <AuthRoute>
+          <AdminDashboard
+            changeUser={() => {
+              setUser(null);
+              setloggedInUserData(null);
+            }}
+          />
+        </AuthRoute>
+      } />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
+};
+
+const App = () => {
+  const location = useLocation();
+  if (location.pathname.startsWith('/employee') || location.pathname === '/EmployeeLogin') {
+    return <EmployeeApp />;
+  }
+  return <AdminApp />;
 };
 
 export default App;

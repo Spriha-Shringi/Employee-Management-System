@@ -1,20 +1,36 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
 
 const AuthRoute = ({ children }) => {
-  const loggedInUser = localStorage.getItem('loggedInUser');
-  
-  if (!loggedInUser) {
-    return <Navigate to="/login" replace />;
+  const auth = getAuth();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+        navigate('/login'); // Redirect unauthorized users
+      }
+      setLoading(false); // Finish loading after checking auth
+    });
+
+    return () => unsubscribe(); // Cleanup listener
+  }, [auth, navigate]);
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <p>Loading...</p>
+      </div>
+    );
   }
 
-  // Optional: Check for specific role if needed
-  const userData = JSON.parse(loggedInUser);
-  if (!userData.role) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return children;
+  return isAuthenticated ? <>{children}</> : null;
 };
 
 export default AuthRoute;

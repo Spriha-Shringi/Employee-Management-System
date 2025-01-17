@@ -18,7 +18,7 @@ const EmployeeDashboard = ({ changeUser, data }) => {
     <div className="p-10 bg-[#1C1C1C] h-screen font-red">
       <Header changeUser={changeUser} data={data} />
       <TaskListNumbers data={data} />
-      <TaskList data={data} />
+      <TaskList employeeId={data.id} /> {/* Pass employeeId here */}
       <div className="text-white mt-4">
         Welcome, {data.name || data.email}
       </div>
@@ -28,7 +28,11 @@ const EmployeeDashboard = ({ changeUser, data }) => {
 
 EmployeeDashboard.propTypes = {
   changeUser: PropTypes.func.isRequired,
-  data: PropTypes.object.isRequired,
+  data: PropTypes.shape({
+    id: PropTypes.string.isRequired, // Ensure 'id' exists in the data prop
+    name: PropTypes.string,
+    email: PropTypes.string,
+  }).isRequired,
 };
 
 export default EmployeeDashboard;
