@@ -8,7 +8,14 @@ import AdminDashboard from './components/Dashboard/AdminDashboard.jsx';
 import { AuthContext } from './context/AuthProvider';
 import AuthRoute from './components/Auth/AuthRoute.jsx';
 
-// Protected Route Component
+const App = () => {
+  const location = useLocation();
+  if (location.pathname.startsWith('/employee') || location.pathname === '/EmployeeLogin') {
+    return <EmployeeApp />;
+  }
+  return <AdminApp />;
+};
+
 const ProtectedRoute = ({ children, allowedRole }) => {
   const loggedInUser = localStorage.getItem('loggedInUser');
 
@@ -152,14 +159,6 @@ const AdminApp = () => {
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
-};
-
-const App = () => {
-  const location = useLocation();
-  if (location.pathname.startsWith('/employee') || location.pathname === '/EmployeeLogin') {
-    return <EmployeeApp />;
-  }
-  return <AdminApp />;
 };
 
 export default App;
